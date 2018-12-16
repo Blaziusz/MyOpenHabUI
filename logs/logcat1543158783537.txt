@@ -1,0 +1,20 @@
+--------- beginning of main
+11-25 16:12:49.358  5153  5153 E art     : setrlimit(RLIMIT_CORE) failed for pid 5153: Operation not permitted
+11-25 16:12:50.241  5153  5192 E libEGL  : validate_display:99 error 3008 (EGL_BAD_DISPLAY)
+11-25 16:12:50.256  5153  5192 E chromium: [ERROR:gl_surface_egl.cc(335)] eglChooseConfig failed with error EGL_BAD_ATTRIBUTE
+11-25 16:12:50.306  5153  5192 E chromium: [ERROR:gl_surface_egl.cc(335)] eglChooseConfig failed with error EGL_BAD_ATTRIBUTE
+11-25 16:12:50.667  5153  5205 E OpenGLRenderer: allen debug liyu Key: 0
+11-25 16:12:50.672  5153  5205 E OpenGLRenderer: allen debug liyu Key: 32
+11-25 16:12:50.695  5153  5205 E OpenGLRenderer: allen debug liyu Key: 0
+11-25 16:12:50.701  5153  5205 E OpenGLRenderer: allen debug liyu Key: 5242944
+11-25 16:12:50.702  5153  5205 E OpenGLRenderer: allen debug liyu Key: 3
+11-25 16:12:52.474  5153  5205 E OpenGLRenderer: allen debug liyu Key: 5242944
+11-25 16:13:01.448  5153  5205 E OpenGLRenderer: allen debug liyu Key: 5242948
+11-25 16:13:01.893  5153  5205 E OpenGLRenderer: allen debug liyu Key: 5242944
+11-25 16:13:01.895  5153  5205 E OpenGLRenderer: allen debug liyu Key: 3
+11-25 16:13:01.896  5153  5205 E OpenGLRenderer: allen debug liyu Key: 13631553
+11-25 16:13:01.898  5153  5205 E OpenGLRenderer: allen debug liyu Key: 5242945
+11-25 16:13:03.493  5153  5205 E OpenGLRenderer: allen debug liyu Key: 0
+11-25 16:13:05.561  5153  5229 E MyKeepAliveService:: Keep Alive Loop, count: 1, thread: 449/Thread-6
+11-25 16:13:05.616  5153  5229 E MyKeepAliveService:: Running in foreground
+11-25 16:13:05.616  5153  5229 E MyKeepAliveService:: NotificationString: KeepAliveService cycle: 1 Relaunches: 0
