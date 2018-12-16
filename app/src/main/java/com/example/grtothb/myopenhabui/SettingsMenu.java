@@ -61,7 +61,7 @@ public class SettingsMenu extends AppCompatActivity {
          * @param buttonView The compound button view whose state has changed.
          * @param isChecked  The new checked state of buttonView.
          */
-        boolean SwitchState = false;
+        boolean SwitchState = true;
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

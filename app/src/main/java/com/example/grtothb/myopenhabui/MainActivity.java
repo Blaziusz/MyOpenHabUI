@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String basic_ui_url = "http://192.168.1.50:8080/basicui/app?sitemap=alarm";
     private static final String NOTIFICATION_CH_ID = "MyOpenHabUINotification";
 
-    private static WebView wv_paper_ui = null;
-    private static WebView wv_basic_ui = null;
 
     // Power management
     private PowerManager.WakeLock mWakeLock;
@@ -71,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e(msg, "PowerManager = null");
         }
         // Load the OpenHab Web pages
-        wv_paper_ui = findViewById(R.id.paper_ui_webview);
+        WebView wv_paper_ui = findViewById(R.id.paper_ui_webview);
         loadWebViewDatafinal(wv_paper_ui, paper_ui_url);
-        wv_basic_ui = findViewById(R.id.basic_ui_webview);
+        WebView wv_basic_ui = findViewById(R.id.basic_ui_webview);
         loadWebViewDatafinal(wv_basic_ui, basic_ui_url);
     }
 

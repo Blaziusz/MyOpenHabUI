@@ -13,6 +13,12 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.grtothb.myopenhabui.R;
 import com.example.grtothb.myopenhabui.SettingsMenu;
 import com.example.grtothb.myopenhabui.fgAppChecker.fgAppChecker;
@@ -39,6 +45,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static PendingIntent pending_alarm_intent = null;
     private static NotificationCompat.Builder KeepAliveAlarm_NotificationBuilder = null;
 
+    private String AlarmSireneTemperature;
+    private RequestQueue HttpReqQueue = null;
+    private StringRequest stringRequest = null;
+    private final String HttpReqTag = "AlarmSireneTag";
     // --------------------------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------------------------
@@ -63,6 +73,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     //
     // --------------------------------------------------------------------------------------------
     private void TriggerNextAlarm (Context context) {
+        // get actual temp
+        getAlarmSireneTemp(context);
         // Check foreground App
         fgAppChecker fg_appChecker = new fgAppChecker();
         String foreGroundAppName = fg_appChecker.getForegroundApp(context);
@@ -76,7 +88,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             context.startActivity(LaunchIntent);
         }
         // Update notification
-        String notification_string = "KeepAliveAlarm cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString();
+        String notification_string = "KeepAliveAlarm cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString() + "Temp: " + AlarmSireneTemperature;
         Log.e(msg, "NotificationString: " + notification_string);
         if (KeepAliveAlarm_NotificationBuilder != null) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
@@ -110,43 +122,77 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             else
                 Log.e(msg, "alarmManager stopAlarming = null");
         }
+        if (HttpReqQueue != null) {
+            HttpReqQueue.cancelAll(HttpReqTag);
+        }
     }
 
-    /**
-     * This method is called when the BroadcastReceiver is receiving an Intent
-     * broadcast.  During this time you can use the other methods on
-     * BroadcastReceiver to view/modify the current result values.  This method
-     * is always called within the main thread of its process, unless you
-     * explicitly asked for it to be scheduled on a different thread using
-     * {@link Context# registerReceiver(BroadcastReceiver, * IntentFilter, String, Handler)}.
-     * When it runs on the main thread you should
-     * never perform long-running operations in it (there is a timeout of
-     * 10 seconds that the system allows before considering the receiver to
-     * be blocked and a candidate to be killed). You cannot launch a popup dialog
-     * in your implementation of onReceive().
-     *
-     * <p><b>If this BroadcastReceiver was launched through a &lt;receiver&gt; tag,
-     * then the object is no longer alive after returning from this
-     * function.</b> This means you should not perform any operations that
-     * return a result to you asynchronously. If you need to perform any follow up
-     * background work, schedule a {@link JobService} with
-     * {@link JobScheduler}.
-     * <p>
-     * If you wish to interact with a service that is already running and previously
-     * bound using {@link Context# bindService(Intent, ServiceConnection, int) bindService()},
-     * you can use {@link #peekService}.
-     *
-     * <p>The Intent filters used in {@link Context#registerReceiver}
-     * and in application manifests are <em>not</em> guaranteed to be exclusive. They
-     * are hints to the operating system about how to find suitable recipients. It is
-     * possible for senders to force delivery to specific recipients, bypassing filter
-     * resolution.  For this reason, {@link #onReceive(Context, Intent) onReceive()}
-     * implementations should respond only to known actions, ignoring any unexpected
-     * Intents that they may receive.
-     *
-     * @param context The Context in which the receiver is running.
-     * @param intent  The Intent being received.
-     */
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    private void getAlarmSireneTemp(Context context) {
+        String url ="http://192.168.1.50:8080/rest/items/AlarmSirene_Temperature/state";
+
+        if (HttpReqQueue == null) {
+            Volley.newRequestQueue(context);
+        }
+
+        if (stringRequest == null) {
+            // Request a string response from the provided URL.
+            stringRequest = new StringRequest(Request.Method.GET, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            AlarmSireneTemperature = response.substring(0, 10);
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    AlarmSireneTemperature = "--- Error ---";
+                }
+            });
+            stringRequest.setTag(HttpReqTag);
+        }
+        // Add the request to the RequestQueue.
+        HttpReqQueue.add(stringRequest);
+    }
+
+
+        /**
+         * This method is called when the BroadcastReceiver is receiving an Intent
+         * broadcast.  During this time you can use the other methods on
+         * BroadcastReceiver to view/modify the current result values.  This method
+         * is always called within the main thread of its process, unless you
+         * explicitly asked for it to be scheduled on a different thread using
+         * {@link Context# registerReceiver(BroadcastReceiver, * IntentFilter, String, Handler)}.
+         * When it runs on the main thread you should
+         * never perform long-running operations in it (there is a timeout of
+         * 10 seconds that the system allows before considering the receiver to
+         * be blocked and a candidate to be killed). You cannot launch a popup dialog
+         * in your implementation of onReceive().
+         *
+         * <p><b>If this BroadcastReceiver was launched through a &lt;receiver&gt; tag,
+         * then the object is no longer alive after returning from this
+         * function.</b> This means you should not perform any operations that
+         * return a result to you asynchronously. If you need to perform any follow up
+         * background work, schedule a {@link JobService} with
+         * {@link JobScheduler}.
+         * <p>
+         * If you wish to interact with a service that is already running and previously
+         * bound using {@link Context# bindService(Intent, ServiceConnection, int) bindService()},
+         * you can use {@link #peekService}.
+         *
+         * <p>The Intent filters used in {@link Context#registerReceiver}
+         * and in application manifests are <em>not</em> guaranteed to be exclusive. They
+         * are hints to the operating system about how to find suitable recipients. It is
+         * possible for senders to force delivery to specific recipients, bypassing filter
+         * resolution.  For this reason, {@link #onReceive(Context, Intent) onReceive()}
+         * implementations should respond only to known actions, ignoring any unexpected
+         * Intents that they may receive.
+         *
+         * @param context The Context in which the receiver is running.
+         * @param intent  The Intent being received.
+         */
     @Override
     public void onReceive(Context context, Intent intent) {
         // check if the right app is running in the foreground
