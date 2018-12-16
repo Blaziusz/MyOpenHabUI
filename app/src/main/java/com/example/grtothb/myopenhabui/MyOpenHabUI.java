@@ -8,3 +8,4 @@ public class MyOpenHabUI extends Application {
         super.onCreate();
     }
 }
+

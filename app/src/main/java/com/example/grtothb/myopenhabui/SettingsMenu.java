@@ -16,6 +16,7 @@ import com.example.grtothb.myopenhabui.AlarmAction.MyBroadcastReceiver;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 
 public class SettingsMenu extends AppCompatActivity {
@@ -35,14 +36,14 @@ public class SettingsMenu extends AppCompatActivity {
         setContentView(R.layout.activity_settings_menu);
 
         // Register routines for UI elements
-        Switch mySwitch = (Switch) findViewById(R.id.LogToFileSwtchID);
+        Switch mySwitch = findViewById(R.id.LogToFileSwtchID);
         if(logFileSwitchListener == null) {
             logFileSwitchListener = new LogToFileSwitchChangeListener();
         }
         mySwitch.setChecked(logFileSwitchListener.logToFileSwitchState);
         mySwitch.setOnCheckedChangeListener(logFileSwitchListener);
 
-        Switch mySwitch2 = (Switch) findViewById(R.id.KeepAliveViaAlarmsID);
+        Switch mySwitch2 = findViewById(R.id.KeepAliveViaAlarmsID);
         if (KeepAliveAlarmListener == null){
             KeepAliveAlarmListener = new KeepAliveViaAlarmSwitchChangeListener();
         }
@@ -60,7 +61,7 @@ public class SettingsMenu extends AppCompatActivity {
          * @param buttonView The compound button view whose state has changed.
          * @param isChecked  The new checked state of buttonView.
          */
-        public boolean SwitchState = false;
+        boolean SwitchState = false;
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -74,7 +75,7 @@ public class SettingsMenu extends AppCompatActivity {
                 sendBroadcast(intent);
 
                 // Get Alarm Interval value
-                EditText myTextEntry = (EditText) findViewById(R.id.IntevalID);
+                EditText myTextEntry = findViewById(R.id.IntevalID);
                 long interval = Long.parseLong(myTextEntry.getText().toString());
                 // Start Keep Alive Alarms
                 Intent intent2 = new Intent(getApplicationContext(), MyBroadcastReceiver.class);
@@ -91,7 +92,7 @@ public class SettingsMenu extends AppCompatActivity {
                 // delete notification channel
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     NotificationManager notificationManager = getSystemService(NotificationManager.class);
-                    notificationManager.deleteNotificationChannel(KEEP_ALIVE_ALARM_NOTIFICATION_CH_ID);
+                    Objects.requireNonNull(notificationManager).deleteNotificationChannel(KEEP_ALIVE_ALARM_NOTIFICATION_CH_ID);
                 }
             }
         }
@@ -108,8 +109,9 @@ public class SettingsMenu extends AppCompatActivity {
          * @param isChecked  The new checked state of buttonView.
          */
         private Process logcat_process = null;
-        public boolean logToFileSwitchState = false;
+        boolean logToFileSwitchState = false;
 
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if(isChecked) {
@@ -123,7 +125,8 @@ public class SettingsMenu extends AppCompatActivity {
                 // create app folder
                 if ( !appDirectory.exists() ) appDirectory.mkdir();
                 // create log folder
-                if ( !logDirectory.exists() ) logDirectory.mkdir();
+                if ( !logDirectory.exists() ) //noinspection ResultOfMethodCallIgnored
+                    logDirectory.mkdir();
                 // clear the previous logcat and then write the new one to the file
                 try {
                     logcat_process = Runtime.getRuntime().exec("logcat -c");
@@ -162,7 +165,7 @@ public class SettingsMenu extends AppCompatActivity {
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
         }
     }
 

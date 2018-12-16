@@ -5,6 +5,8 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.os.Build;
 
+import java.util.Objects;
+
 public class Utils {
 
     private Utils() {
@@ -18,7 +20,7 @@ public class Utils {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static boolean hasUsageStatsPermission(Context context) {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow("android:get_usage_stats",
+        int mode = Objects.requireNonNull(appOps).checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
         boolean granted = mode == AppOpsManager.MODE_ALLOWED;
         return granted;

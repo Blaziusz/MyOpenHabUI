@@ -17,9 +17,8 @@ import com.example.grtothb.myopenhabui.fgAppChecker.fgAppChecker;
 
 public class KeepAliveService extends Service {
     private static final String msg = "MyKeepAliveService:";
-    int mStartMode;       // indicates how to behave if the service is killed
-    IBinder mBinder;      // interface for clients that bind
-    boolean mAllowRebind; // indicates whether onRebind should be used
+    //IBinder mBinder;      // interface for clients that bind
+    //boolean mAllowRebind; // indicates whether onRebind should be used
 
     // Parameters for Keep Alive Service
     private static final String SRV_PARAM_PKG_NAME = "com.example.grtothb.myopenhabui.param.pkgName";
@@ -156,7 +155,8 @@ public class KeepAliveService extends Service {
             final long interval = intent.getLongExtra(SRV_PARAM_INTERVAL, 3000); //in milliseconds
             startKeepAliveThread(PkgName,interval);
         }
-        mStartMode = START_REDELIVER_INTENT;
+        // indicates how to behave if the service is killed
+        int mStartMode = START_REDELIVER_INTENT;
         return mStartMode;
     }
 

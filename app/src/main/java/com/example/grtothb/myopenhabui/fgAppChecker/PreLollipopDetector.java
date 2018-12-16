@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import java.util.Objects;
+
 public class PreLollipopDetector implements Detector {
     @Override
     public String getForegroundApp(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Service.ACTIVITY_SERVICE);
-        ActivityManager.RunningTaskInfo foregroundTaskInfo = am.getRunningTasks(1).get(0);
+        ActivityManager.RunningTaskInfo foregroundTaskInfo = Objects.requireNonNull(am).getRunningTasks(1).get(0);
         String foregroundTaskPackageName = foregroundTaskInfo.topActivity.getPackageName();
         PackageManager pm = context.getPackageManager();
         PackageInfo foregroundAppPackageInfo = null;

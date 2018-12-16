@@ -3,10 +3,8 @@
     <string name="menu">Menu</string>
     <string name="start_keepalive_service">Start KeepAlive Service</string>
     <string name="stop_keepalive_service">Stop KeepAlive Service</string>
-    <string name="NOTIFICATION_CH_ID">MyOpenHabUINotification</string>
     <string name="logtofile">LogToFile</string>
     <string name="keepalive_via_alarms">KeepAlive via Alarms</string>
-    <string name="repeat_interval_ms">Repeat Interval [ms]</string>
     <string name="repeat_interval_in_ms">Repeat Interval in ms</string>
     <string name="_30000">30000</string>
     <string name="keep_alive_alarm_interval_ms">Keep Alive Alarm Interval [ms]:</string>

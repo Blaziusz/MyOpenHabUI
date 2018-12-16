@@ -93,8 +93,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         pending_alarm_intent = PendingIntent.getBroadcast(
                 context, 1, Alarm_intent, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
-                + interval, pending_alarm_intent);
+        if (alarmManager != null)
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pending_alarm_intent);
+        else
+            Log.e(msg, "alarmManager = null");
     }
 
     // --------------------------------------------------------------------------------------------
@@ -103,7 +105,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private void stopAlarming (Context context) {
         if (pending_alarm_intent != null) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-            alarmManager.cancel(pending_alarm_intent);
+            if (alarmManager != null)
+                alarmManager.cancel(pending_alarm_intent);
+            else
+                Log.e(msg, "alarmManager stopAlarming = null");
         }
     }
 

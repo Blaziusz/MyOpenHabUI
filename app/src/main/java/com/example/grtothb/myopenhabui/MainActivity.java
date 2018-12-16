@@ -25,10 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String msg = "MyOpenHabUI: ";
     private static final String paper_ui_url = "http://192.168.1.50:8080/paperui/index.html#/inbox/search";
     private static final String basic_ui_url = "http://192.168.1.50:8080/basicui/app?sitemap=alarm";
-    public static final String NOTIFICATION_CH_ID = "MyOpenHabUINotification";
+    private static final String NOTIFICATION_CH_ID = "MyOpenHabUINotification";
 
-    public static WebView wv_paper_ui = null;
-    public static WebView wv_basic_ui = null;
+    private static WebView wv_paper_ui = null;
+    private static WebView wv_basic_ui = null;
 
     // Power management
     private PowerManager.WakeLock mWakeLock;
@@ -62,13 +62,18 @@ public class MainActivity extends AppCompatActivity {
         // Show Activity
         setContentView(R.layout.activity_main);
         // Set PowerManager settings
-        PowerManager pm = (PowerManager) getSystemService(getBaseContext().POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "my_ohui:pm_tag");
-        mWakeLock.acquire();
+        PowerManager pm = (PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+        if (pm != null){
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "my_ohui:pm_tag");
+            mWakeLock.acquire(10*60*1000L /*10 minutes*/);
+        }
+        else {
+            Log.e(msg, "PowerManager = null");
+        }
         // Load the OpenHab Web pages
-        wv_paper_ui = (WebView) findViewById(R.id.paper_ui_webview);
+        wv_paper_ui = findViewById(R.id.paper_ui_webview);
         loadWebViewDatafinal(wv_paper_ui, paper_ui_url);
-        wv_basic_ui = (WebView) findViewById(R.id.basic_ui_webview);
+        wv_basic_ui = findViewById(R.id.basic_ui_webview);
         loadWebViewDatafinal(wv_basic_ui, basic_ui_url);
     }
 
@@ -87,7 +92,11 @@ public class MainActivity extends AppCompatActivity {
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            } else {
+                Log.e(msg, "notificationManager = null");
+            }
         }
     }
 
@@ -117,9 +126,9 @@ public class MainActivity extends AppCompatActivity {
                 m6.invoke(ws, Boolean.TRUE);
                 Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
             } catch (NoSuchMethodException e) {
-                Log.e("WEB_VIEW_JS", "Reflection fail", e);
+                Log.e("WEB_VIEW_JS", "Reflection fail NoSuchMethod", e);
             } catch (InvocationTargetException e) {
-                Log.e("WEB_VIEW_JS", "Reflection fail", e);
+                Log.e("WEB_VIEW_JS", "Reflection fail InvocationIssue", e);
             } catch (IllegalAccessException e) {
                 Log.e("WEB_VIEW_JS", "Reflection fail", e);
             }
@@ -146,7 +155,10 @@ public class MainActivity extends AppCompatActivity {
         // TODO: move this stopService, this is called when getting back from Menu Activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.deleteNotificationChannel(NOTIFICATION_CH_ID);
+            if (notificationManager != null)
+                notificationManager.deleteNotificationChannel(NOTIFICATION_CH_ID);
+            else
+                Log.e(msg,"notificationManager on Destroy = null");
         }
         super.onDestroy();
     }

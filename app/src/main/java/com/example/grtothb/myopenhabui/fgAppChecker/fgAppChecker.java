@@ -4,7 +4,7 @@ import android.content.Context;
 
 public class fgAppChecker {
 
-    private Detector detector;
+    private final Detector detector;
 
     public fgAppChecker() {
         if(Utils.postLollipop())
