@@ -18,7 +18,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
+import com.example.grtothb.myopenhabui.MyOpenHabUI;
 import com.example.grtothb.myopenhabui.R;
 import com.example.grtothb.myopenhabui.SettingsMenu;
 import com.example.grtothb.myopenhabui.fgAppChecker.fgAppChecker;
@@ -45,7 +45,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static PendingIntent pending_alarm_intent = null;
     private static NotificationCompat.Builder KeepAliveAlarm_NotificationBuilder = null;
 
-    private String AlarmSireneTemperature;
+    private static String AlarmSireneTemperature = "-.- °C";
     private RequestQueue HttpReqQueue = null;
     private StringRequest stringRequest = null;
     private final String HttpReqTag = "AlarmSireneTag";
@@ -73,8 +73,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     //
     // --------------------------------------------------------------------------------------------
     private void TriggerNextAlarm (Context context) {
-        // get actual temp
-        getAlarmSireneTemp(context);
+        // get actual temp every 15 min and at the very beginning
+        final int _15MIN_IN_MS = 15*60*1000;
+        if ( (AlarmSireneTemperature == "-.- °C") || ((((NumberOfCycles+1) * interval) / _15MIN_IN_MS) - ((NumberOfCycles * interval) / _15MIN_IN_MS)) != 0 ) {
+            getAlarmSireneTemp(context);
+        }
         // Check foreground App
         fgAppChecker fg_appChecker = new fgAppChecker();
         String foreGroundAppName = fg_appChecker.getForegroundApp(context);
@@ -88,7 +91,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             context.startActivity(LaunchIntent);
         }
         // Update notification
-        String notification_string = "KeepAliveAlarm cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString() + "Temp: " + AlarmSireneTemperature;
+        String notification_string = "KeepAliveAlarm cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString() + " Temp: " + AlarmSireneTemperature;
         Log.e(msg, "NotificationString: " + notification_string);
         if (KeepAliveAlarm_NotificationBuilder != null) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
@@ -133,8 +136,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private void getAlarmSireneTemp(Context context) {
         String url ="http://192.168.1.50:8080/rest/items/AlarmSirene_Temperature/state";
 
-        if (HttpReqQueue == null) {
-            Volley.newRequestQueue(context);
+        if (HttpReqQueue == null){
+            HttpReqQueue = MyOpenHabUI.getsInstance().getmRequestQueue();
         }
 
         if (stringRequest == null) {
@@ -143,7 +146,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
-                            AlarmSireneTemperature = response.substring(0, 10);
+                            AlarmSireneTemperature = response + " °C";
                         }
                     }, new Response.ErrorListener() {
                 @Override

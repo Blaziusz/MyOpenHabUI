@@ -26,6 +26,9 @@ android {
     }
     productFlavors {
     }
+
+    // TODO: CHeck if it is needed for volley
+    //useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
