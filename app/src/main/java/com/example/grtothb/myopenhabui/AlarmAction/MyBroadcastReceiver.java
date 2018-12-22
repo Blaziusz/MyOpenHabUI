@@ -32,7 +32,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     // Intent parameters for BroadCastReceiver
     public static final String BCASTRCV_PARAM_PKG_NAME = "com.example.grtothb.myopenhabui.bcastrcv.param.pkgName";
     public static final String BCASTRCV_PARAM_INTERVAL = "com.example.grtothb.myopenhabui.bcastrcv.param.interval";
-    private static final String BCASTRCV_PARAM_ALMSIR_TEMP = "com.example.grtothb.myopenhabui.bcastrcv.param.alarmsirene.temp";
     private static final String BCASTRCV_PARAM_NROFRELAUNCHES = "com.example.grtothb.myopenhabui.bcastrcv.param.numberOfRelaunches";
     private static final String BCASTRCV_PARAM_NROFYCYCLES = "com.example.grtothb.myopenhabui.bcastrcv.param.numberOfCycles";
 
@@ -115,26 +114,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     //
     // --------------------------------------------------------------------------------------------
     private void TriggerNextAlarm (Context context) {
-        // NOTE: Order of the operations below is important as it needs to be ensured that in case the App is started in a new
+        // TODO: Check if the order of the operations below is important as it needs to be ensured that in case the App is started in a new
         // process the right info from this call MyBroadcastReceiver is delivered by the static methods
 
-        //TODO: Verify if setting up the next Alarm and setting pending_alarm_intent before relaunch helps to provide the right state info for relaunch
-        //TODO: doesn't work as expected see, Log.e line in MyOpenHabUI.java
-        //NOTE: this is probably necessary to ensure that the relaunched app gets the correct value for pending_alarm_intent
-        // Setup next Alarm
-        Intent Alarm_intent = new Intent (context, MyBroadcastReceiver.class);
-        Alarm_intent.setAction(BCASTRCV_TRGNXTALARM);
-        // Set params,
-        // NOTE: add also static variables as params to save state in case BroadCastReceiver will be executed in new process
-        Alarm_intent.putExtra(BCASTRCV_PARAM_PKG_NAME, PkgName);
-        Alarm_intent.putExtra(BCASTRCV_PARAM_INTERVAL, interval);
-        Alarm_intent.putExtra(BCASTRCV_PARAM_NROFRELAUNCHES, NumberOfRelaunches);
-        Alarm_intent.putExtra(BCASTRCV_PARAM_NROFYCYCLES, NumberOfCycles);
-        Alarm_intent.putExtra(BCASTRCV_PARAM_ALMSIR_TEMP, AlarmSireneTemperature);
-
-        // TODO: Verify if FLAG_UPDATE_CURRENT is OK
-        pending_alarm_intent = PendingIntent.getBroadcast(
-                context, 1, Alarm_intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Check foreground App
         fgAppChecker fg_appChecker = new fgAppChecker();
@@ -176,6 +158,23 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
 
 
+        //TODO: Verify if setting up the next Alarm and setting pending_alarm_intent before relaunch helps to provide the right state info for relaunch
+        //TODO: I tried it but didn't work as expected see, Log.e line in MyOpenHabUI.java
+        //TODO: When Moving this code before relaunch causes coed needs to be modified to put the right NrOfRelaunches value into the intent
+        //NOTE: this is probably necessary to ensure that the relaunched app gets the correct value for pending_alarm_intent
+        // Setup next Alarm
+        Intent Alarm_intent = new Intent (context, MyBroadcastReceiver.class);
+        Alarm_intent.setAction(BCASTRCV_TRGNXTALARM);
+        // Set params,
+        // NOTE: add also static variables as params to save state in case BroadCastReceiver will be executed in new process
+        Alarm_intent.putExtra(BCASTRCV_PARAM_PKG_NAME, PkgName);
+        Alarm_intent.putExtra(BCASTRCV_PARAM_INTERVAL, interval);
+        Alarm_intent.putExtra(BCASTRCV_PARAM_NROFRELAUNCHES, NumberOfRelaunches);
+        Alarm_intent.putExtra(BCASTRCV_PARAM_NROFYCYCLES, NumberOfCycles);
+
+        // TODO: Verify if FLAG_UPDATE_CURRENT is OK
+        pending_alarm_intent = PendingIntent.getBroadcast(
+                context, 1, Alarm_intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Start next Alarm
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         if (alarmManager != null)
@@ -190,8 +189,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private void stopAlarming (Context context) {
         if (pending_alarm_intent != null) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-            if (alarmManager != null)
+            if (alarmManager != null) {
                 alarmManager.cancel(pending_alarm_intent);
+                pending_alarm_intent = null;
+            }
             else
                 Log.e(msg, "ERROR: alarmManager stopAlarming = null");
         }
@@ -277,9 +278,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 PkgName = tmp_str;
             interval = intent.getLongExtra(BCASTRCV_PARAM_INTERVAL, 30000); //in milliseconds
 
-            tmp_str = intent.getStringExtra(BCASTRCV_PARAM_ALMSIR_TEMP);
-            if (tmp_str != null)
-                AlarmSireneTemperature = tmp_str;
             NumberOfCycles = intent.getIntExtra(BCASTRCV_PARAM_NROFYCYCLES, NumberOfCycles);
             NumberOfRelaunches = intent.getIntExtra(BCASTRCV_PARAM_NROFRELAUNCHES, NumberOfRelaunches);
             NumberOfCycles++;
