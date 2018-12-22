@@ -5,7 +5,7 @@ android {
         Test {
             keyAlias 'key0'
             keyPassword 'Z0ldalma'
-            storeFile file('D:/Programs/Android/Key4Signing/BalazsToth.jks')
+            storeFile file('C:/Programs/Android/Key4Signing/BalazsToth.jks')
             storePassword 'Z0ldalma'
         }
     }
@@ -14,8 +14,8 @@ android {
         applicationId "com.example.grtothb.myopenhabui"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 125
-        versionName '1.2.5'
+        versionCode 130
+        versionName '1.3'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

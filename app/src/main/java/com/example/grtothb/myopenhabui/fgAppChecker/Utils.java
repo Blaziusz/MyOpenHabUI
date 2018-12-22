@@ -22,7 +22,6 @@ public class Utils {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         int mode = Objects.requireNonNull(appOps).checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
-        boolean granted = mode == AppOpsManager.MODE_ALLOWED;
-        return granted;
+        return mode == AppOpsManager.MODE_ALLOWED;
     }
 }

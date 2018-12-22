@@ -15,7 +15,6 @@ import android.view.Window;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import com.android.volley.toolbox.Volley;
 import com.example.grtothb.myopenhabui.fgAppChecker.Utils;
 
 import java.lang.reflect.InvocationTargetException;

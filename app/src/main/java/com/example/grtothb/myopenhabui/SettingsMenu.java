@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -47,8 +48,15 @@ public class SettingsMenu extends AppCompatActivity {
         if (KeepAliveAlarmListener == null){
             KeepAliveAlarmListener = new KeepAliveViaAlarmSwitchChangeListener();
         }
+        KeepAliveAlarmListener.SwitchState = MyBroadcastReceiver.isAlarmOn();
         mySwitch2.setChecked(KeepAliveAlarmListener.SwitchState);
         mySwitch2.setOnCheckedChangeListener(KeepAliveAlarmListener);
+
+        // Get Alarm Interval value
+        EditText myTextEntry = findViewById(R.id.IntevalID);
+        myTextEntry.setText(MyBroadcastReceiver.getInterval().toString());
+
+        Log.e("MyOpenHabUI_set", "Pid: " + android.os.Process.myPid() + "Uid: " + android.os.Process.myUid());
     }
 
     // --------------------------------------------------------------------------------------------
@@ -61,7 +69,7 @@ public class SettingsMenu extends AppCompatActivity {
          * @param buttonView The compound button view whose state has changed.
          * @param isChecked  The new checked state of buttonView.
          */
-        boolean SwitchState = true;
+        boolean SwitchState = false;
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -69,20 +77,16 @@ public class SettingsMenu extends AppCompatActivity {
                 SwitchState = true;
                 // Create Notification Channel for the App's keepAliveAlarms
                 createNotificationChannel(KEEP_ALIVE_ALARM_NOTIFICATION_CH_ID);
-                // Setup notification
-                Intent intent = new Intent(getApplicationContext(), MyBroadcastReceiver.class);
-                intent.setAction(MyBroadcastReceiver.BCASTRCV_SETUP_NOTIFICATION);
-                sendBroadcast(intent);
 
                 // Get Alarm Interval value
                 EditText myTextEntry = findViewById(R.id.IntevalID);
                 long interval = Long.parseLong(myTextEntry.getText().toString());
                 // Start Keep Alive Alarms
-                Intent intent2 = new Intent(getApplicationContext(), MyBroadcastReceiver.class);
-                intent2.setAction(MyBroadcastReceiver.BCASTRCV_TRGNXTALARM);
-                intent2.putExtra(MyBroadcastReceiver.BCASTRCV_PARAM_PKG_NAME, "com.example.grtothb.myopenhabui");
-                intent2.putExtra(MyBroadcastReceiver.BCASTRCV_INTERVAL, interval);
-                sendBroadcast(intent2);
+                Intent intent = new Intent(getApplicationContext(), MyBroadcastReceiver.class);
+                intent.setAction(MyBroadcastReceiver.BCASTRCV_TRGNXTALARM);
+                intent.putExtra(MyBroadcastReceiver.BCASTRCV_PARAM_PKG_NAME, "com.example.grtothb.myopenhabui");
+                intent.putExtra(MyBroadcastReceiver.BCASTRCV_PARAM_INTERVAL, interval);
+                sendBroadcast(intent);
             } else {
                 SwitchState = false;
                 // Stop Keep Alive Alarms
