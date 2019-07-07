@@ -15,7 +15,7 @@ public class LollipopDetector implements Detector {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public String getForegroundApp(final Context context) {
         if(!Utils.hasUsageStatsPermission(context)) {
-            Log.e(new String ("MyLollipopDetector"), "Permission error");
+            Log.e("MyLollipopDetector", "Permission error");
             return null;
         }
 

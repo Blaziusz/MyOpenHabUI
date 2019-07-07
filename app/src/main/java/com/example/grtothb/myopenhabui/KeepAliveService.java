@@ -156,8 +156,7 @@ public class KeepAliveService extends Service {
             startKeepAliveThread(PkgName,interval);
         }
         // indicates how to behave if the service is killed
-        int mStartMode = START_REDELIVER_INTENT;
-        return mStartMode;
+        return START_REDELIVER_INTENT;
     }
 
 

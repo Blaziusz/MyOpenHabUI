@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String basic_ui_url = "http://192.168.1.50:8080/basicui/app?sitemap=alarm";
     private static final String NOTIFICATION_CH_ID = "MyOpenHabUINotification";
 
-    private static WebView wv_paper_ui = null;
-    private static WebView wv_basic_ui = null;
 
     // Power management
     private PowerManager.WakeLock mWakeLock;
@@ -71,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e(msg, "PowerManager = null");
         }
         // Load the OpenHab Web pages
-        wv_paper_ui = findViewById(R.id.paper_ui_webview);
+        WebView wv_paper_ui = findViewById(R.id.paper_ui_webview);
         loadWebViewDatafinal(wv_paper_ui, paper_ui_url);
-        wv_basic_ui = findViewById(R.id.basic_ui_webview);
+        WebView wv_basic_ui = findViewById(R.id.basic_ui_webview);
         loadWebViewDatafinal(wv_basic_ui, basic_ui_url);
     }
 
@@ -112,17 +110,17 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
             try {
                 Log.d("WEB_VIEW_JS", "Enabling HTML5-Features");
-                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", new Class[]{Boolean.TYPE});
+                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", Boolean.TYPE);
                 m1.invoke(ws, Boolean.TRUE);
-                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", new Class[]{Boolean.TYPE});
+                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", Boolean.TYPE);
                 m2.invoke(ws, Boolean.TRUE);
-                Method m3 = WebSettings.class.getMethod("setDatabasePath", new Class[]{String.class});
+                Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
                 m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/");
-                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", new Class[]{Long.TYPE});
+                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
                 m4.invoke(ws, 1024 * 1024 * 8);
-                Method m5 = WebSettings.class.getMethod("setAppCachePath", new Class[]{String.class});
+                Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
                 m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/");
-                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", new Class[]{Boolean.TYPE});
+                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
                 m6.invoke(ws, Boolean.TRUE);
                 Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
             } catch (NoSuchMethodException e) {
