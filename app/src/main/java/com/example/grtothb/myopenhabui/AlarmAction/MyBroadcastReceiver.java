@@ -17,11 +17,17 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.grtothb.myopenhabui.MyOpenHabUI;
 import com.example.grtothb.myopenhabui.R;
 import com.example.grtothb.myopenhabui.SettingsMenu;
 import com.example.grtothb.myopenhabui.fgAppChecker.fgAppChecker;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Objects;
 
@@ -45,7 +51,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static Integer NumberOfRelaunches = 0;
     private static Integer NumberOfCycles = 0;
     private static String AlarmSireneTemperature = "-.- °C";
+    private static Integer openFKs = 0; // Number of open Fensterkontakte
+    private static Integer numOfFKs = 0; // Number of the Fensterkontakte
+    private static Integer disabledFKs = 0; // Number of Fensterkontakte disabled for Alarm
+    private static Integer numOfFKs4disable = 0; // Mumber of Fensterkontalte that can be disabled for Alarm
     private static NotificationCompat.Builder KeepAliveAlarm_NotificationBuilder = null;
+    private static boolean alarmingOn = false;
 
     // TODO: Verify if StopAlarm can stop alarming via PendingIntent
     // NOTE: PendingIntent is set to static to make sure StopAlarm will use the right PendingIntent to stop the alarm
@@ -55,14 +66,25 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static long interval = 30000;
 
     private final String HttpReqTag = "AlarmSireneTag";
-    private RequestQueue HttpReqQueue = null;
-    private StringRequest stringRequest = null;
+    private final String JsonReqTag = "HM_FKsTag";
+    private static RequestQueue HttpReqQueue = null;
+    private static StringRequest stringRequest = null;
+    private static JsonObjectRequest jsonRequest = null;
+    private static JsonObjectRequest jsonReqDisabledFKs = null;
+
+    // --------------------------------------------------------------------------------------------
+    // Constructor only for debug purposes
+    // --------------------------------------------------------------------------------------------
+    public MyBroadcastReceiver() {
+        super();
+        Log.e(msg, "MyBcasRcv Constructor, PID: " + android.os.Process.myPid() + " UID: " + android.os.Process.myUid());
+    }
 
     // --------------------------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------------------------
     public static boolean isAlarmOn() {
-        return (pending_alarm_intent != null);
+        return alarmingOn;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -117,7 +139,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         // TODO: Check if the order of the operations below is important as it needs to be ensured that in case the App is started in a new
         // process the right info from this call MyBroadcastReceiver is delivered by the static methods
 
-
         // Check foreground App
         fgAppChecker fg_appChecker = new fgAppChecker();
         String foreGroundAppName = fg_appChecker.getForegroundApp(context);
@@ -129,7 +150,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             Log.e(msg, "Relaunch, Pid: " + android.os.Process.myPid() + ", Uid: " + android.os.Process.myUid());
             NumberOfRelaunches++;
             Intent LaunchIntent = context.getPackageManager().getLaunchIntentForPackage(PkgName);
-            context.startActivity(LaunchIntent);
+            if (LaunchIntent != null) {
+                LaunchIntent.putExtra(BCASTRCV_PARAM_PKG_NAME, "TestString");
+                context.startActivity(LaunchIntent);
+            }
         }
 
         // get actual temp every 15 min and at the very beginning
@@ -138,8 +162,14 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             getAlarmSireneTemp();
         }
 
+        // get number of open Fensterkontakte in every cycle
+        getNumOfOpenFK();
+        // get number of disabled Fensterkontakte in every cycle
+        getNumOfDisabledFK();
+
         // Update notification
-        String notification_string = "Cycle: " + NumberOfCycles.toString() + "/" + msToTimeStr(NumberOfCycles*interval) + " Relaunches: " + NumberOfRelaunches.toString() + " Temp: " + AlarmSireneTemperature;
+        String notification_title = "MyOpenHabUI Alarm: " + msToTimeStr(NumberOfCycles*interval) + " ReLau: " + NumberOfRelaunches.toString() ;
+        String notification_string = "OpenFKs:" + openFKs.toString() + "/" + numOfFKs + ", DisabledFKs:" + disabledFKs.toString() + "/" + numOfFKs4disable + ", Temp: " + AlarmSireneTemperature;
         Log.e(msg, "NotificationString: " + notification_string);
 
         // Create NotificationBuilder in case it not available (due to first run or Bcastreceiver executing in new process)
@@ -149,6 +179,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         if (KeepAliveAlarm_NotificationBuilder != null) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
             KeepAliveAlarm_NotificationBuilder.setContentText(notification_string);
+            KeepAliveAlarm_NotificationBuilder.setContentTitle(notification_title);
             Notification updateNotification = KeepAliveAlarm_NotificationBuilder.build();
             notificationManager.notify(KEEP_ALIVE_ALARM_NOTIFICATION_ID, updateNotification);
         }
@@ -157,11 +188,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             Log.e(msg, " ERROR: KeepAliveAlarm_NotificationBuilder is null!");
         }
 
-
-        //TODO: Verify if setting up the next Alarm and setting pending_alarm_intent before relaunch helps to provide the right state info for relaunch
-        //TODO: I tried it but didn't work as expected see, Log.e line in MyOpenHabUI.java
-        //TODO: When Moving this code before relaunch causes coed needs to be modified to put the right NrOfRelaunches value into the intent
-        //NOTE: this is probably necessary to ensure that the relaunched app gets the correct value for pending_alarm_intent
         // Setup next Alarm
         Intent Alarm_intent = new Intent (context, MyBroadcastReceiver.class);
         Alarm_intent.setAction(BCASTRCV_TRGNXTALARM);
@@ -196,8 +222,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             else
                 Log.e(msg, "ERROR: alarmManager stopAlarming = null");
         }
+        // Remove notification
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.cancel(KEEP_ALIVE_ALARM_NOTIFICATION_ID);
+
         if (HttpReqQueue != null) {
             HttpReqQueue.cancelAll(HttpReqTag);
+            HttpReqQueue.cancelAll(JsonReqTag);
         }
     }
 
@@ -232,7 +263,101 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-        /**
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    private void getNumOfOpenFK() {
+        String url ="http://192.168.1.50:8080/rest/items/HM_FKs";
+
+        if (HttpReqQueue == null){
+            HttpReqQueue = MyOpenHabUI.getsInstance().getmRequestQueue();
+        }
+
+        if (jsonRequest == null) {
+            // Request a string response from the provided URL.
+            jsonRequest = new JsonObjectRequest(Request.Method.GET, url,null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            openFKs = 0;
+                            try {
+                                JSONArray jsonArray = response.getJSONArray("members");
+                                numOfFKs = jsonArray.length();
+                                if (response.getString("state").equals("OPEN")) {
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObj = jsonArray.getJSONObject(i);
+                                        if (jsonObj.getString("state").equals("OPEN")) openFKs++;
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                openFKs = -1;
+                                numOfFKs = -1;
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(msg, "getHM-FKs error:" + error.toString());
+                    openFKs = -1;
+                    numOfFKs = -1;
+                }
+            });
+            jsonRequest.setTag(JsonReqTag);
+        }
+
+        // Add the request to the RequestQueue.
+        HttpReqQueue.add(jsonRequest);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    private void getNumOfDisabledFK() {
+        String url ="http://192.168.1.50:8080/rest/items/FK_Enablers";
+
+        if (HttpReqQueue == null){
+            HttpReqQueue = MyOpenHabUI.getsInstance().getmRequestQueue();
+        }
+
+        if (jsonReqDisabledFKs == null) {
+            // Request a string response from the provided URL.
+            jsonReqDisabledFKs = new JsonObjectRequest(Request.Method.GET, url,null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            disabledFKs = 0;
+                            try {
+                                JSONArray jsonArray = response.getJSONArray("members");
+                                numOfFKs4disable = jsonArray.length();
+                                if (response.getString("state").equals("OFF")) {
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObj = jsonArray.getJSONObject(i);
+                                        if (jsonObj.getString("state").equals("OFF")) disabledFKs++;
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                disabledFKs = -1;
+                                numOfFKs4disable = -1;
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(msg, "getHM-FKs error:" + error.toString());
+                    disabledFKs = -1;
+                    numOfFKs4disable = -1;
+                }
+            });
+            jsonReqDisabledFKs.setTag(JsonReqTag);
+        }
+
+        // Add the request to the RequestQueue.
+        HttpReqQueue.add(jsonReqDisabledFKs);
+    }
+
+    /**
          * This method is called when the BroadcastReceiver is receiving an Intent
          * broadcast.  During this time you can use the other methods on
          * BroadcastReceiver to view/modify the current result values.  This method
@@ -269,6 +394,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
          */
     @Override
     public void onReceive(Context context, Intent intent) {
+
+        Log.e(msg, "onReceive start");
+        //TODO: Verify if setting up the next Alarm and setting the alarming Status alarmingOn before checking for relaunch
+        // helps to provide the right state info for te relaunched app
+        //TODO: I tried it but didn't work as expected see, Log.e() line in MyOpenHabUI.java
+        //NOTE: this is probably necessary to ensure that the relaunched app gets the correct value for alarmingOn
+
         // check if the right app is running in the foreground
         if (intent != null) {
 
@@ -284,14 +416,17 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
             switch (Objects.requireNonNull(intent.getAction())) {
                 case BCASTRCV_TRGNXTALARM:
+                    alarmingOn = true;
                     TriggerNextAlarm(context);
                     break;
                 case BCASTRCV_STPALARM:
                     stopAlarming(context);
+                    alarmingOn = false;
                     break;
                 default:
                     // Invalid action
                     stopAlarming(context);
+                    alarmingOn = false;
                     break;
             }
         }
