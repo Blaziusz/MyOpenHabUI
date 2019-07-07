@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.example.grtothb.myopenhabui.DeviceAdminReceiver.myDeviceAdminReceiver;
 import com.example.grtothb.myopenhabui.MyOpenHabUI;
 import com.example.grtothb.myopenhabui.R;
 import com.example.grtothb.myopenhabui.SettingsMenu;
@@ -207,6 +208,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pending_alarm_intent);
         else
             Log.e(msg, "ERROR: alarmManager = null");
+
+
+        // Lock the screen
+        Intent lckScreenIntent = new Intent(context, myDeviceAdminReceiver.class);
+        lckScreenIntent.setAction("LCK_SCRN");
+        context.sendBroadcast(lckScreenIntent);
     }
 
     // --------------------------------------------------------------------------------------------

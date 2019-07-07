@@ -15,6 +15,7 @@ import android.view.Window;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.example.grtothb.myopenhabui.AlarmAction.MyBroadcastReceiver;
 import com.example.grtothb.myopenhabui.fgAppChecker.Utils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,6 +36,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Debug Infos
+        Log.e("MainAct - DBG", "Calling Activity: " + getCallingActivity());
+        Log.e("MainAct - DBG", "Calling Package: " + getCallingPackage());
+        Log.e("MainAct - DBG", "Component Name: " + getComponentName());
+        Log.e("MainAct - DBG", "LifeCycle: " + getLifecycle().getCurrentState().toString());
+        Log.e("MainAct - DBG", "PID: " + android.os.Process.myPid());
+
+        Log.e("MainAct - DBG", "Get Intent Package: " + getIntent().getPackage());
+        Log.e("MainAct - DBG", "Get Intent ComponentName: " + getIntent().getComponent());
+        Log.e("MainAct - DBG", "Get Intent Type: " + getIntent().getType());
+        Log.e("MainAct - DBG", "Get Intent Action: " + getIntent().getAction());
+        Log.e("MainAct - DBG", "Get Intent TesSTR: " + getIntent().getStringExtra(MyBroadcastReceiver.BCASTRCV_PARAM_PKG_NAME));
+
+
 
         // get permissions for usage stats
         requestUsageStatsPermission();

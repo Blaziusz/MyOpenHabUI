@@ -1,7 +1,12 @@
 package com.example.grtothb.myopenhabui;
 
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +32,12 @@ public class SettingsMenu extends AppCompatActivity {
 
     private static LogToFileSwitchChangeListener logFileSwitchListener = null;
     private static KeepAliveViaAlarmSwitchChangeListener KeepAliveAlarmListener = null;
+
+
+    // Variables for myDeviceAdminReceiver
+    static final int RESULT_ENABLE = 1;
+    DevicePolicyManager devicePolicyMan;
+    ComponentName compName;
 
     // --------------------------------------------------------------------------------------------
     //
@@ -56,7 +67,38 @@ public class SettingsMenu extends AppCompatActivity {
         EditText myTextEntry = findViewById(R.id.IntevalID);
         myTextEntry.setText(MyBroadcastReceiver.getInterval().toString());
 
-        Log.e("MyOpenHabUI_set", "Pid: " + android.os.Process.myPid() + "Uid: " + android.os.Process.myUid());
+
+        // Prepare to work with the DPM
+        devicePolicyMan = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        compName = new ComponentName(this, DeviceAdminReceiver.class);
+
+        // check if DeviveAdminReceiver is registered
+        boolean active = devicePolicyMan.isAdminActive(compName);
+        if (!active) {
+            // Not activated, activate it
+            // Launch the activity to have the user enable our admin.
+            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                    "MyOpenHabUI needs Admin access to be able to lock the screen.");
+            startActivityForResult(intent, RESULT_ENABLE);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case RESULT_ENABLE:
+                if (resultCode == Activity.RESULT_OK) {
+                    Log.e("myDeviceAdminReceiver", "Admin enabled!");
+                } else {
+                    Log.e("myDeviceAdminReceiver", "Admin enable FAILED!");
+                }
+                return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     // --------------------------------------------------------------------------------------------
