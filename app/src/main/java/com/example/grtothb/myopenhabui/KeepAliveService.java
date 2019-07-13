@@ -90,8 +90,8 @@ public class KeepAliveService extends Service {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                Integer i = 0;
-                Integer NumberOfRelaunches = 0;
+                int i = 0;
+                int NumberOfRelaunches = 0;
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
                 String foreGroundAppName;
                 fgAppChecker fg_appChecker = new fgAppChecker();
@@ -99,7 +99,7 @@ public class KeepAliveService extends Service {
                 try {
                     while (!stopTask) {
                         i++;
-                        Log.e(msg, "Keep Alive Loop, count: " + i.toString() + ", thread: " + this.getId() + "/" + this.getName());
+                        Log.e(msg, "Keep Alive Loop, count: " + Integer.toString(i) + ", thread: " + this.getId() + "/" + this.getName());
 
                         //BT - 2018-11-04: checking for Foreground constantly relaunches app when screensave is on on Huawei Tablet
                         // Check if our app is in the foreground
@@ -118,7 +118,7 @@ public class KeepAliveService extends Service {
                             Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(PkgName);
                             startActivity(LaunchIntent);
                         }
-                        String notification_string = "KeepAliveService cycle: " + i.toString() + " Relaunches: " + NumberOfRelaunches.toString();
+                        String notification_string = "KeepAliveService cycle: " + Integer.toString(i) + " Relaunches: " + Integer.toString(NumberOfRelaunches);
                         Log.e(msg, "NotificationString: " + notification_string);
                         myNotificationBuilder.setContentText(notification_string);
                         Notification updateNotification = myNotificationBuilder.build();

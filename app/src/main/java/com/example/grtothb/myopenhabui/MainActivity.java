@@ -15,6 +15,7 @@ import android.view.Window;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.example.grtothb.myopenhabui.AlarmAction.MyBroadcastReceiver;
 import com.example.grtothb.myopenhabui.fgAppChecker.Utils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,6 +36,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Debug Infos
+        Log.e("MainAct - DBG", "Calling Activity: " + getCallingActivity());
+        Log.e("MainAct - DBG", "Calling Package: " + getCallingPackage());
+        Log.e("MainAct - DBG", "Component Name: " + getComponentName());
+        Log.e("MainAct - DBG", "LifeCycle: " + getLifecycle().getCurrentState().toString());
+        Log.e("MainAct - DBG", "PID: " + android.os.Process.myPid());
+
+        Log.e("MainAct - DBG", "Get Intent Package: " + getIntent().getPackage());
+        Log.e("MainAct - DBG", "Get Intent ComponentName: " + getIntent().getComponent());
+        Log.e("MainAct - DBG", "Get Intent Type: " + getIntent().getType());
+        Log.e("MainAct - DBG", "Get Intent Action: " + getIntent().getAction());
+        Log.e("MainAct - DBG", "Get Intent TesSTR: " + getIntent().getStringExtra(MyBroadcastReceiver.BCASTRCV_PARAM_PKG_NAME));
+
+
 
         // get permissions for usage stats
         requestUsageStatsPermission();
@@ -63,7 +79,10 @@ public class MainActivity extends AppCompatActivity {
         PowerManager pm = (PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
         if (pm != null){
             mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "my_ohui:pm_tag");
-            mWakeLock.acquire(10*60*1000L /*10 minutes*/);
+            //mWakeLock.acquire(10*60*1000L /*10 minutes*/);
+            // Keep CPU on 365 days long
+            mWakeLock.acquire(365*24*60*60*1000L);
+
         }
         else {
             Log.e(msg, "PowerManager = null");
@@ -107,29 +126,27 @@ public class MainActivity extends AppCompatActivity {
         ws.setJavaScriptEnabled(true);
         ws.setAllowFileAccess(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
-            try {
-                Log.d("WEB_VIEW_JS", "Enabling HTML5-Features");
-                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", Boolean.TYPE);
-                m1.invoke(ws, Boolean.TRUE);
-                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", Boolean.TYPE);
-                m2.invoke(ws, Boolean.TRUE);
-                Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
-                m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/");
-                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
-                m4.invoke(ws, 1024 * 1024 * 8);
-                Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
-                m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/");
-                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
-                m6.invoke(ws, Boolean.TRUE);
-                Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
-            } catch (NoSuchMethodException e) {
-                Log.e("WEB_VIEW_JS", "Reflection fail NoSuchMethod", e);
-            } catch (InvocationTargetException e) {
-                Log.e("WEB_VIEW_JS", "Reflection fail InvocationIssue", e);
-            } catch (IllegalAccessException e) {
-                Log.e("WEB_VIEW_JS", "Reflection fail", e);
-            }
+        try {
+            Log.d("WEB_VIEW_JS", "Enabling HTML5-Features");
+            Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", Boolean.TYPE);
+            m1.invoke(ws, Boolean.TRUE);
+            Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", Boolean.TYPE);
+            m2.invoke(ws, Boolean.TRUE);
+            Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
+            m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/");
+            Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
+            m4.invoke(ws, 1024 * 1024 * 8);
+            Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
+            m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/");
+            Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
+            m6.invoke(ws, Boolean.TRUE);
+            Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
+        } catch (NoSuchMethodException e) {
+            Log.e("WEB_VIEW_JS", "Reflection fail NoSuchMethod", e);
+        } catch (InvocationTargetException e) {
+            Log.e("WEB_VIEW_JS", "Reflection fail InvocationIssue", e);
+        } catch (IllegalAccessException e) {
+            Log.e("WEB_VIEW_JS", "Reflection fail", e);
         }
         wv.loadUrl(url);
     }

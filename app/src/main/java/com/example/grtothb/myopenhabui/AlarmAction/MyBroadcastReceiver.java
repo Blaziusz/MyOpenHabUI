@@ -8,6 +8,7 @@ import android.app.job.JobService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -17,7 +18,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.grtothb.myopenhabui.MyOpenHabUI;
@@ -32,6 +32,7 @@ import org.json.JSONObject;
 import java.util.Objects;
 
 import static android.content.Context.ALARM_SERVICE;
+import static android.content.Context.POWER_SERVICE;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
 
@@ -51,6 +52,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static Integer NumberOfRelaunches = 0;
     private static Integer NumberOfCycles = 0;
     private static String AlarmSireneTemperature = "-.- °C";
+    private static String AlarmSystemArmedState = "---";
     private static Integer openFKs = 0; // Number of open Fensterkontakte
     private static Integer numOfFKs = 0; // Number of the Fensterkontakte
     private static Integer disabledFKs = 0; // Number of Fensterkontakte disabled for Alarm
@@ -63,12 +65,14 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     private static PendingIntent pending_alarm_intent = null;
 
     private String PkgName = "com.example.grtothb.myopenhabui";
-    private static long interval = 30000;
+    private static long interval = 60000;
 
     private final String HttpReqTag = "AlarmSireneTag";
+    private final String HttpReqTagAlarmState = "AlarmArmedTag";
     private final String JsonReqTag = "HM_FKsTag";
     private static RequestQueue HttpReqQueue = null;
     private static StringRequest stringRequest = null;
+    private static StringRequest stringRequestAlarmState = null;
     private static JsonObjectRequest jsonRequest = null;
     private static JsonObjectRequest jsonReqDisabledFKs = null;
 
@@ -93,7 +97,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public static Long getInterval() {
         return interval;
     }
-
 
     // --------------------------------------------------------------------------------------------
     //
@@ -167,8 +170,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         // get number of disabled Fensterkontakte in every cycle
         getNumOfDisabledFK();
 
+        // get Alarm State in every cycle
+        getAlarmSystemArmedState();
+
         // Update notification
-        String notification_title = "MyOpenHabUI Alarm: " + msToTimeStr(NumberOfCycles*interval) + " ReLau: " + NumberOfRelaunches.toString() ;
+        String notification_title = "MyOpenHabUI Alarm: " + msToTimeStr(NumberOfCycles*interval) + " ReLau: " + NumberOfRelaunches.toString() + " ALARM: " + AlarmSystemArmedState;
         String notification_string = "OpenFKs:" + openFKs.toString() + "/" + numOfFKs + ", DisabledFKs:" + disabledFKs.toString() + "/" + numOfFKs4disable + ", Temp: " + AlarmSireneTemperature;
         Log.e(msg, "NotificationString: " + notification_string);
 
@@ -186,6 +192,15 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         else
         {
             Log.e(msg, " ERROR: KeepAliveAlarm_NotificationBuilder is null!");
+        }
+
+        // Check if the screen is ON
+        PowerManager powerMan = (PowerManager) context.getSystemService(POWER_SERVICE);
+        // If screen is Off turn it ON
+        if (!powerMan.isInteractive()) {
+            PowerManager.WakeLock mWakeL = powerMan.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK| PowerManager.ACQUIRE_CAUSES_WAKEUP, "my_ohui:wakeup_tag");
+            // turn on screen
+            mWakeL.acquire(5*1000L);
         }
 
         // Setup next Alarm
@@ -231,6 +246,38 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             HttpReqQueue.cancelAll(JsonReqTag);
         }
     }
+
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    private void getAlarmSystemArmedState() {
+        String url ="http://192.168.1.50:8080/rest/items/Alarm_Armed/state";
+
+        if (HttpReqQueue == null){
+            HttpReqQueue = MyOpenHabUI.getsInstance().getmRequestQueue();
+        }
+
+        if (stringRequestAlarmState == null) {
+            // Request a string response from the provided URL.
+            stringRequestAlarmState = new StringRequest(Request.Method.GET, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            AlarmSystemArmedState = response;
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    AlarmSystemArmedState = "- Err -";
+                }
+            });
+            stringRequestAlarmState.setTag(HttpReqTagAlarmState);
+        }
+        // Add the request to the RequestQueue.
+        HttpReqQueue.add(stringRequestAlarmState);
+    }
+
+
 
     // --------------------------------------------------------------------------------------------
     //
