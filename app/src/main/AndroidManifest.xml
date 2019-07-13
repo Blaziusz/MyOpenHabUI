@@ -10,19 +10,26 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
-    <!-- BT 20198.10.27: original setting for no action bar for whole app -->
-    <!-- android:theme="@style/Theme.AppCompat.NoActionBar" -->
     <application
         android:name=".MyOpenHabUI"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
-        android:fullBackupContent="@xml/backup_descriptor">
+        android:usesCleartextTraffic="true">
+
+        <receiver android:name=".DeviceAdminReceiver.myDeviceAdminReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,7 +53,6 @@
             android:exported="true" />
 
         <receiver android:name=".AlarmAction.MyBroadcastReceiver" />
-
     </application>
 
 </manifest>

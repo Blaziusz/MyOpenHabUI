@@ -30,6 +30,7 @@ public class MyOpenHabUI extends Application {
         // created when it is accessed for the first time
         if (mRequestQueue == null) {
             mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+            Log.e("MyOpenHabUI", "New VolleyRequestQ, PID: " + android.os.Process.myPid() + " UID: " + android.os.Process.myUid());
         }
         return mRequestQueue;
     }
