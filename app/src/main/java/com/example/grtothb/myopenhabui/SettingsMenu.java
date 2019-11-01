@@ -56,7 +56,7 @@ public class SettingsMenu extends AppCompatActivity {
         EditText myTextEntry = findViewById(R.id.IntevalID);
         myTextEntry.setText(MyBroadcastReceiver.getInterval().toString());
 
-        Log.e("MyOpenHabUI_set", "Pid: " + android.os.Process.myPid() + "Uid: " + android.os.Process.myUid());
+        Log.d("MyOpenHabUI_set", "Pid: " + android.os.Process.myPid() + "Uid: " + android.os.Process.myUid());
     }
 
     // --------------------------------------------------------------------------------------------

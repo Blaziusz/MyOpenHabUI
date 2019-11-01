@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+/*
         // Debug Infos
         Log.e("MainAct - DBG", "Calling Activity: " + getCallingActivity());
         Log.e("MainAct - DBG", "Calling Package: " + getCallingPackage());
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e("MainAct - DBG", "Get Intent Action: " + getIntent().getAction());
         Log.e("MainAct - DBG", "Get Intent TesSTR: " + getIntent().getStringExtra(MyBroadcastReceiver.BCASTRCV_PARAM_PKG_NAME));
 
-
+*/
 
         // get permissions for usage stats
         requestUsageStatsPermission();
@@ -80,18 +81,18 @@ public class MainActivity extends AppCompatActivity {
         if (pm != null){
             mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "my_ohui:pm_tag");
             //mWakeLock.acquire(10*60*1000L /*10 minutes*/);
-            // Keep CPU on 365 days long
-            mWakeLock.acquire(365*24*60*60*1000L);
+            // Keep CPU on 6 weeks (42 days) long
+            mWakeLock.acquire(42*24*60*60*1000L);
 
         }
         else {
-            Log.e(msg, "PowerManager = null");
+            Log.e(msg, "Error: PowerManager = null");
         }
         // Load the OpenHab Web pages
         WebView wv_paper_ui = findViewById(R.id.paper_ui_webview);
-        loadWebViewDatafinal(wv_paper_ui, paper_ui_url);
+        loadWebViewDatafinal(wv_paper_ui, paper_ui_url, "paper_ui");
         WebView wv_basic_ui = findViewById(R.id.basic_ui_webview);
-        loadWebViewDatafinal(wv_basic_ui, basic_ui_url);
+        loadWebViewDatafinal(wv_basic_ui, basic_ui_url, "basic_ui");
     }
 
     // --------------------------------------------------------------------------------------------
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
             } else {
-                Log.e(msg, "notificationManager = null");
+                Log.e(msg, "Error: notificationManager = null");
             }
         }
     }
@@ -120,8 +121,12 @@ public class MainActivity extends AppCompatActivity {
 
     // --------------------------------------------------------------------------------------------
     // Load Webpages
+    //
+    // 2019-11-01: Use different cache for the 2 web pages: paper_ui and basic_ui. It seems to be
+    //             that the CPU load of ~85% after 1 week of operation is caused by webview cache
+    //             after clearing cache of the app in settings the CPU load falls back to 1-2%.
     // --------------------------------------------------------------------------------------------
-    private void loadWebViewDatafinal(WebView wv, String url) {
+    private void loadWebViewDatafinal(WebView wv, String url, String FileID) {
         WebSettings ws = wv.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setAllowFileAccess(true);
@@ -133,11 +138,11 @@ public class MainActivity extends AppCompatActivity {
             Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", Boolean.TYPE);
             m2.invoke(ws, Boolean.TRUE);
             Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
-            m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/");
+            m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/" + FileID + "/");
             Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
             m4.invoke(ws, 1024 * 1024 * 8);
             Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
-            m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/");
+            m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/" + FileID + "/");
             Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
             m6.invoke(ws, Boolean.TRUE);
             Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
@@ -163,11 +168,13 @@ public class MainActivity extends AppCompatActivity {
     // --------------------------------------------------------------------------------------------
     @Override
     public void onDestroy(){
+        Log.d("MyOpenHabUI:MainAct", "onDestroy");
+        // TODO: move this where the app is closed, this is called when getting back from Menu Activity
+/*
+        // Release wakelock
         if (mWakeLock != null)
             mWakeLock.release();
         // delete Apps's notification channel
-        Log.d("MyOpenHabUI:MainAct", "onDestroy");
-        // TODO: move this stopService, this is called when getting back from Menu Activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             if (notificationManager != null)
@@ -175,9 +182,9 @@ public class MainActivity extends AppCompatActivity {
             else
                 Log.e(msg,"notificationManager on Destroy = null");
         }
+*/
         super.onDestroy();
     }
-
 
     // --------------------------------------------------------------------------------------------
     //

@@ -81,7 +81,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     // --------------------------------------------------------------------------------------------
     public MyBroadcastReceiver() {
         super();
-        Log.e(msg, "MyBcasRcv Constructor, PID: " + android.os.Process.myPid() + " UID: " + android.os.Process.myUid());
+        Log.d(msg, "MyBcasRcv Constructor, PID: " + android.os.Process.myPid() + " UID: " + android.os.Process.myUid());
     }
 
     // --------------------------------------------------------------------------------------------
@@ -149,8 +149,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             Log.e(msg, "Running in foreground, Pid: " + android.os.Process.myPid() + ", Uid: " + android.os.Process.myUid());
         }
         else {
-            Log.e(msg, "Running Package: " + foreGroundAppName + " Relaunch Package: " + PkgName);
-            Log.e(msg, "Relaunch, Pid: " + android.os.Process.myPid() + ", Uid: " + android.os.Process.myUid());
+            Log.d(msg, "Running Package: " + foreGroundAppName + " Relaunch Package: " + PkgName);
+            Log.d(msg, "Relaunch, Pid: " + android.os.Process.myPid() + ", Uid: " + android.os.Process.myUid());
             NumberOfRelaunches++;
             Intent LaunchIntent = context.getPackageManager().getLaunchIntentForPackage(PkgName);
             if (LaunchIntent != null) {
@@ -176,7 +176,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         // Update notification
         String notification_title = "MyOpenHabUI Alarm: " + msToTimeStr(NumberOfCycles*interval) + " ReLau: " + NumberOfRelaunches.toString() + " ALARM: " + AlarmSystemArmedState;
         String notification_string = "OpenFKs:" + openFKs.toString() + "/" + numOfFKs + ", DisabledFKs:" + disabledFKs.toString() + "/" + numOfFKs4disable + ", Temp: " + AlarmSireneTemperature;
-        Log.e(msg, "NotificationString: " + notification_string);
+        Log.d(msg, "NotificationString: " + notification_string);
 
         // Create NotificationBuilder in case it not available (due to first run or Bcastreceiver executing in new process)
         if (KeepAliveAlarm_NotificationBuilder == null)
@@ -442,7 +442,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.e(msg, "onReceive start");
+        Log.d(msg, "onReceive start");
         //TODO: Verify if setting up the next Alarm and setting the alarming Status alarmingOn before checking for relaunch
         // helps to provide the right state info for te relaunched app
         //TODO: I tried it but didn't work as expected see, Log.e() line in MyOpenHabUI.java
@@ -477,7 +477,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     break;
             }
         }
-        Log.e(msg, "KeepAliveAlarmOnReceive cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString());
+        Log.d(msg, "KeepAliveAlarmOnReceive cycle: " + NumberOfCycles.toString() + " Relaunches: " + NumberOfRelaunches.toString());
     }
 
 }

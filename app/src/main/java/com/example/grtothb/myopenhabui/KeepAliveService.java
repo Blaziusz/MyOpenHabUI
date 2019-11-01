@@ -99,7 +99,7 @@ public class KeepAliveService extends Service {
                 try {
                     while (!stopTask) {
                         i++;
-                        Log.e(msg, "Keep Alive Loop, count: " + Integer.toString(i) + ", thread: " + this.getId() + "/" + this.getName());
+                        Log.d(msg, "Keep Alive Loop, count: " + Integer.toString(i) + ", thread: " + this.getId() + "/" + this.getName());
 
                         //BT - 2018-11-04: checking for Foreground constantly relaunches app when screensave is on on Huawei Tablet
                         // Check if our app is in the foreground
@@ -110,16 +110,16 @@ public class KeepAliveService extends Service {
                         //if (isAppOnForeground(getBaseContext(), PkgName)) {
                         foreGroundAppName = fg_appChecker.getForegroundApp(getBaseContext());
                         if ( PkgName.equalsIgnoreCase(foreGroundAppName) ) {
-                            Log.e(msg, "Running in foreground");
+                            Log.d(msg, "Running in foreground");
                         }
                         else {
-                            Log.e(msg, "Running Package: " + foreGroundAppName + "Relaunch Package:" + PkgName);
+                            Log.d(msg, "Running Package: " + foreGroundAppName + "Relaunch Package:" + PkgName);
                             NumberOfRelaunches++;
                             Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(PkgName);
                             startActivity(LaunchIntent);
                         }
                         String notification_string = "KeepAliveService cycle: " + Integer.toString(i) + " Relaunches: " + Integer.toString(NumberOfRelaunches);
-                        Log.e(msg, "NotificationString: " + notification_string);
+                        Log.d(msg, "NotificationString: " + notification_string);
                         myNotificationBuilder.setContentText(notification_string);
                         Notification updateNotification = myNotificationBuilder.build();
                         notificationManager.notify(NOTIFICATION_ID, updateNotification);
@@ -140,7 +140,7 @@ public class KeepAliveService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()
-        Log.e(msg, "service starting");
+        Log.d(msg, "service starting");
 
         // Create the Notification Builder for the Foreground Service
         myNotificationBuilder = preparations4Notification();
@@ -149,7 +149,7 @@ public class KeepAliveService extends Service {
         startForeground(NOTIFICATION_ID, notification);
 
         if (intent != null) {
-            Log.e(msg, "intent received in onStartCommand");
+            Log.d(msg, "intent received in onStartCommand");
             // Start new thread for service routine
             final String PkgName = intent.getStringExtra(SRV_PARAM_PKG_NAME);
             final long interval = intent.getLongExtra(SRV_PARAM_INTERVAL, 3000); //in milliseconds
@@ -177,7 +177,7 @@ public class KeepAliveService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Log.e(msg, "onTaskRemoved: " + rootIntent.getPackage());
+        Log.d(msg, "onTaskRemoved: " + rootIntent.getPackage());
     }
 
     // --------------------------------------------------------------------------------------------
