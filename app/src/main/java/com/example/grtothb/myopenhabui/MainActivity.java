@@ -122,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
     // --------------------------------------------------------------------------------------------
     // Load Webpages
     //
+    // 2019-11-03: Cache still seems to cause performance increase => Webview started with no cache
+    //
     // 2019-11-01: Use different cache for the 2 web pages: paper_ui and basic_ui. It seems to be
     //             that the CPU load of ~85% after 1 week of operation is caused by webview cache
     //             after clearing cache of the app in settings the CPU load falls back to 1-2%.
@@ -139,13 +141,18 @@ public class MainActivity extends AppCompatActivity {
             m2.invoke(ws, Boolean.TRUE);
             Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
             m3.invoke(ws, "/data/data/" + this.getPackageName() + "/databases/" + FileID + "/");
-            Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
-            m4.invoke(ws, 1024 * 1024 * 8);
-            Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
-            m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/" + FileID + "/");
-            Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
-            m6.invoke(ws, Boolean.TRUE);
             Log.d("WEB_VIEW_JS", "Enabled HTML5-Features");
+            // start the webview w/o cache
+            //Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
+            //m4.invoke(ws, 1024 * 1024 * 8);
+            //Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
+            //m5.invoke(ws, "/data/data/" + this.getPackageName() + "/cache/" + FileID + "/");
+            Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
+            //m6.invoke(ws, Boolean.TRUE);
+            // Disable cache
+            m6.invoke(ws, Boolean.FALSE);
+            wv.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+            Log.d("WEB_VIEW_JS", "Disabled Cache");
         } catch (NoSuchMethodException e) {
             Log.e("WEB_VIEW_JS", "Reflection fail NoSuchMethod", e);
         } catch (InvocationTargetException e) {
