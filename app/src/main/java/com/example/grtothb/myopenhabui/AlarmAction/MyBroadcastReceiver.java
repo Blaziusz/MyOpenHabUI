@@ -274,6 +274,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             stringRequestAlarmState.setTag(HttpReqTagAlarmState);
         }
         // Add the request to the RequestQueue.
+        // 2019-11-25: disable cache for the request
+        stringRequestAlarmState.setShouldCache(false);
         HttpReqQueue.add(stringRequestAlarmState);
     }
 
@@ -306,6 +308,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             stringRequest.setTag(HttpReqTag);
         }
         // Add the request to the RequestQueue.
+        // 2019-11-25: disable cache for the request
+        stringRequest.setShouldCache(false);
         HttpReqQueue.add(stringRequest);
     }
 
@@ -354,6 +358,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
 
         // Add the request to the RequestQueue.
+        // 2019-11-25: disable cache for the request
+        jsonRequest.setShouldCache(false);
         HttpReqQueue.add(jsonRequest);
     }
 
@@ -401,6 +407,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
 
         // Add the request to the RequestQueue.
+        // 2019-11-25: disable cache for the request
+        jsonReqDisabledFKs.setShouldCache(false);
         HttpReqQueue.add(jsonReqDisabledFKs);
     }
 
