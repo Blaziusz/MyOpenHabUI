@@ -29,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Objects;
 
 import static android.content.Context.ALARM_SERVICE;
@@ -158,6 +159,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 context.startActivity(LaunchIntent);
             }
         }
+
+        // 2019-11-27 : Not tested yet => delete cache every 12 hour
+        final int _12H_IN_MS = 12*60*60*1000;
+        if ( ((((NumberOfCycles+1) * interval) / _12H_IN_MS) - ((NumberOfCycles * interval) / _12H_IN_MS)) != 0 ) {
+            deleteCache(context);
+        }
+
 
         // get actual temp every 15 min and at the very beginning
         final int _15MIN_IN_MS = 15*60*1000;
@@ -411,6 +419,38 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         jsonReqDisabledFKs.setShouldCache(false);
         HttpReqQueue.add(jsonReqDisabledFKs);
     }
+
+    // --------------------------------------------------------------------------------------------
+    // 2019-11-27 : Not tested yet
+    // --------------------------------------------------------------------------------------------
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            Log.e(msg, " ERROR: deleteCache" + dir.toString());
+            deleteDir(dir);
+        } catch (Exception e) { e.printStackTrace();}
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // 2019-11-27 : Not tested yet
+    // --------------------------------------------------------------------------------------------
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
+    }
+
 
     /**
          * This method is called when the BroadcastReceiver is receiving an Intent
