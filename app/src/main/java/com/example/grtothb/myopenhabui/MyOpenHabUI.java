@@ -10,6 +10,7 @@ import com.example.grtothb.myopenhabui.AlarmAction.MyBroadcastReceiver;
 public class MyOpenHabUI extends Application {
     private static MyOpenHabUI sInstance;
     private RequestQueue mRequestQueue;
+    private MainActivity mMainActivityInstance = null;
 
     @Override
     public void onCreate() {
@@ -33,6 +34,14 @@ public class MyOpenHabUI extends Application {
             Log.d("MyOpenHabUI", "New VolleyRequestQ, PID: " + android.os.Process.myPid() + " UID: " + android.os.Process.myUid());
         }
         return mRequestQueue;
+    }
+
+    public synchronized void setMainActivityInstance(MainActivity mainActivityInst) {
+        mMainActivityInstance = mainActivityInst;
+    }
+
+    public synchronized MainActivity getMainActivityInstance() {
+        return mMainActivityInstance;
     }
 }
 

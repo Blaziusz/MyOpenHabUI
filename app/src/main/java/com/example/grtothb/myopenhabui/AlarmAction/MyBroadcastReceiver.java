@@ -20,6 +20,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.example.grtothb.myopenhabui.MainActivity;
 import com.example.grtothb.myopenhabui.MyOpenHabUI;
 import com.example.grtothb.myopenhabui.R;
 import com.example.grtothb.myopenhabui.SettingsMenu;
@@ -160,16 +161,28 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
-        // 2019-11-27 : Not tested yet => delete cache every 12 hour
-        final int _12H_IN_MS = 12*60*60*1000;
-        if ( ((((NumberOfCycles+1) * interval) / _12H_IN_MS) - ((NumberOfCycles * interval) / _12H_IN_MS)) != 0 ) {
+        // 2019-12-01 Use % (modulo) operator to make code more readable
+        // WARNING: Using modulo assumes the interval set for KeepAlive Alarm is in a way (e.g.: 60000 and not 30123) that 15 min and 12 hour values and their multiplies are achieved
+        // Previous version of the code was more difficult to read, worked however w/ any KeepAlive Alarm interval values
+        final int _12H_IN_MS =  12*60*60*1000;
+        final int _15MIN_IN_MS = 15*60*1000;
+
+        // 2019-11-27 : delete cache every 12 hour and restart webview timers (see: https://bartsimons.me/android-webview-cpu-usage-fix/)
+        if (((NumberOfCycles*interval) % _12H_IN_MS) == 0) {
             deleteCache(context);
+            // 2019-12-01 restart webview timers
+            MainActivity myMainActivity = MyOpenHabUI.getsInstance().getMainActivityInstance();
+            if (myMainActivity != null)
+            {
+                myMainActivity.wv_basic_ui.pauseTimers();
+                myMainActivity.wv_basic_ui.resumeTimers();
+                myMainActivity.wv_paper_ui.pauseTimers();
+                myMainActivity.wv_paper_ui.resumeTimers();
+            }
         }
 
-
         // get actual temp every 15 min and at the very beginning
-        final int _15MIN_IN_MS = 15*60*1000;
-        if ( (Objects.equals(AlarmSireneTemperature, "-.- °C")) || ((((NumberOfCycles+1) * interval) / _15MIN_IN_MS) - ((NumberOfCycles * interval) / _15MIN_IN_MS)) != 0 ) {
+        if ( (Objects.equals(AlarmSireneTemperature, "-.- °C")) || (((NumberOfCycles * interval) % _15MIN_IN_MS) == 0) ) {
             getAlarmSireneTemp();
         }
 
@@ -437,8 +450,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public static boolean deleteDir(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
+            for (String child : children) {
+                boolean success = deleteDir(new File(dir, child));
                 if (!success) {
                     return false;
                 }

@@ -23,6 +23,11 @@ import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity {
 
+    // 2019-12-01 - Make webviews public to be able to restart timers
+    // see: https://bartsimons.me/android-webview-cpu-usage-fix/
+    public WebView wv_paper_ui;
+    public WebView wv_basic_ui;
+
     private static final String msg = "MyOpenHabUI: ";
     private static final String paper_ui_url = "http://192.168.1.50:8080/paperui/index.html#/inbox/search";
     private static final String basic_ui_url = "http://192.168.1.50:8080/basicui/app?sitemap=alarm";
@@ -89,10 +94,12 @@ public class MainActivity extends AppCompatActivity {
             Log.e(msg, "Error: PowerManager = null");
         }
         // Load the OpenHab Web pages
-        WebView wv_paper_ui = findViewById(R.id.paper_ui_webview);
+        wv_paper_ui = findViewById(R.id.paper_ui_webview);
         loadWebViewDatafinal(wv_paper_ui, paper_ui_url, "paper_ui");
-        WebView wv_basic_ui = findViewById(R.id.basic_ui_webview);
+        wv_basic_ui = findViewById(R.id.basic_ui_webview);
         loadWebViewDatafinal(wv_basic_ui, basic_ui_url, "basic_ui");
+        // 2019-12-01 - Set the MainActivity Instance in the Application instance
+        MyOpenHabUI.getsInstance().setMainActivityInstance(this);
     }
 
     // --------------------------------------------------------------------------------------------
