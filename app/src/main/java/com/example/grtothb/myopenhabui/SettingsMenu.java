@@ -22,6 +22,7 @@ import java.util.Objects;
 
 public class SettingsMenu extends AppCompatActivity {
 
+    private static final String msg = "MyOpenHabUISettingsMenu:";
     public static final String KEEP_ALIVE_SRV_NOTIFICATION_CH_ID = "MyOpenHabUINotification";
     public static final String KEEP_ALIVE_ALARM_NOTIFICATION_CH_ID = "MyOpenHabUIAlarmNotification";
 
@@ -197,11 +198,31 @@ public class SettingsMenu extends AppCompatActivity {
         }
     }
 
-
-
     //TODO: Add OnClickStartKeepAliveWorker routine
     //TODO: Add dependency in build.gradle for Androidx Workmanager
     //TODO: Add buttons to activity_settings_menu layout
     //TODO: Add KeepAliveWorker class, see MyAppWithNotification
     //TODO: Update CreateNotificationChannel routine so it can be used for both KeepAliveService and KeepAliveWorker
+
+
+    //2020-02-13
+
+    // --------------------------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------------------------
+    public void onClickDeleteCache(View view) {
+        // delete cache
+        MyBroadcastReceiver.deleteCache(getApplicationContext());// delete cache
+        // reset timers
+        MainActivity myMainActivity = MyOpenHabUI.getsInstance().getMainActivityInstance();
+        if (myMainActivity != null)
+        {
+            myMainActivity.wv_basic_ui.pauseTimers();
+            myMainActivity.wv_basic_ui.resumeTimers();
+            myMainActivity.wv_paper_ui.pauseTimers();
+            myMainActivity.wv_paper_ui.resumeTimers();
+        }
+
+    }
+
 }
