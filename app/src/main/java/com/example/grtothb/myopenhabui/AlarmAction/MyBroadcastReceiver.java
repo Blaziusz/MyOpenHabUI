@@ -165,10 +165,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         // WARNING: Using modulo assumes the interval set for KeepAlive Alarm is in a way (e.g.: 60000 and not 30123) that 15 min and 12 hour values and their multiplies are achieved
         // Previous version of the code was more difficult to read, worked however w/ any KeepAlive Alarm interval values
         final int _12H_IN_MS =  12*60*60*1000;
+        // final int _1H_IN_MS = 1*60*60*1000;
         final int _15MIN_IN_MS = 15*60*1000;
 
         // 2019-11-27 : delete cache every 12 hour and restart webview timers (see: https://bartsimons.me/android-webview-cpu-usage-fix/)
-        if (((NumberOfCycles*interval) % _12H_IN_MS) == 0) {
+        // 2020-06-28 : delete cache every 12 hour or when it is marked for deletion and restart webview timers (see: https://bartsimons.me/android-webview-cpu-usage-fix/)
+        if ((((NumberOfCycles*interval) % _12H_IN_MS) == 0) || MyOpenHabUI.getsInstance().getTriggerCacheDel()) {
             deleteCache(context);
             // 2019-12-01 restart webview timers
             MainActivity myMainActivity = MyOpenHabUI.getsInstance().getMainActivityInstance();

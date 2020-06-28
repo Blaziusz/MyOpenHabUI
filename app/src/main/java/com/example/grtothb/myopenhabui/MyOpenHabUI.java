@@ -11,6 +11,7 @@ public class MyOpenHabUI extends Application {
     private static MyOpenHabUI sInstance;
     private RequestQueue mRequestQueue;
     private MainActivity mMainActivityInstance = null;
+    private boolean mTriggerCacheDel = false;
 
     @Override
     public void onCreate() {
@@ -42,6 +43,21 @@ public class MyOpenHabUI extends Application {
 
     public synchronized MainActivity getMainActivityInstance() {
         return mMainActivityInstance;
+    }
+
+    // Added 2020-06-28
+    // setTriggerCacheDel triggers the deletion of the cache
+    // getTriggerCacheDel automatically resets mTriggerCacheDel if it is true
+    public synchronized boolean getTriggerCacheDel() {
+        if (mTriggerCacheDel) {
+            mTriggerCacheDel = false;
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void setTriggerCacheDel() {
+        mTriggerCacheDel = true;
     }
 }
 

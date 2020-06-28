@@ -211,6 +211,11 @@ public class SettingsMenu extends AppCompatActivity {
     //
     // --------------------------------------------------------------------------------------------
     public void onClickDeleteCache(View view) {
+        // Changed as of 2020-06-28 => here the deleting of cache will be only triggered
+        // The cache will be deleted in MyBroadcastReceiver
+        MyOpenHabUI.getsInstance().setTriggerCacheDel();
+
+  /*
         // delete cache
         MyBroadcastReceiver.deleteCache(getApplicationContext());// delete cache
         // reset timers
@@ -222,7 +227,7 @@ public class SettingsMenu extends AppCompatActivity {
             myMainActivity.wv_paper_ui.pauseTimers();
             myMainActivity.wv_paper_ui.resumeTimers();
         }
-
+*/
     }
 
 }
