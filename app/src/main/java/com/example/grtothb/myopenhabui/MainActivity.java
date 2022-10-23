@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     public WebView wv_basic_ui;
 
     private static final String msg = "MyOpenHabUI: ";
-    private static final String paper_ui_url = "http://192.168.1.50:8080/paperui/index.html#/inbox/search";
+    private static final String paper_ui_url = "http://192.168.1.50:8080/habpanel/index.html#/";
     private static final String basic_ui_url = "http://192.168.1.50:8080/basicui/app?sitemap=alarm";
     private static final String NOTIFICATION_CH_ID = "MyOpenHabUINotification";
 
