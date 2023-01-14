@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(msg, "Error: PowerManager = null");
         }
         // Load the OpenHab Web pages
+        // Load the OpenHab Web page
         wv_paper_ui = findViewById(R.id.paper_ui_webview);
         loadWebViewDatafinal(wv_paper_ui, paper_ui_url, "paper_ui");
         wv_basic_ui = findViewById(R.id.basic_ui_webview);

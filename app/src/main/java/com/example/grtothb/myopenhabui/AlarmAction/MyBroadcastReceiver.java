@@ -35,6 +35,7 @@ import java.util.Objects;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.POWER_SERVICE;
+import static android.os.SystemClock.sleep;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
 
@@ -171,14 +172,19 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         // 2019-11-27 : delete cache every 12 hour and restart webview timers (see: https://bartsimons.me/android-webview-cpu-usage-fix/)
         // 2020-06-28 : delete cache every 12 hour or when it is marked for deletion and restart webview timers (see: https://bartsimons.me/android-webview-cpu-usage-fix/)
         if ((((NumberOfCycles*interval) % _12H_IN_MS) == 0) || MyOpenHabUI.getsInstance().getTriggerCacheDel()) {
-            deleteCache(context);
+            // 2022-12-10 BT - do not delete cache
+            //deleteCache(context);
             // 2019-12-01 restart webview timers
             MainActivity myMainActivity = MyOpenHabUI.getsInstance().getMainActivityInstance();
             if (myMainActivity != null)
             {
                 myMainActivity.wv_basic_ui.pauseTimers();
+                //2022-12-10: Add short wait after pauseTimers
+                sleep(50);
                 myMainActivity.wv_basic_ui.resumeTimers();
                 myMainActivity.wv_paper_ui.pauseTimers();
+
+                sleep(50);
                 myMainActivity.wv_paper_ui.resumeTimers();
             }
         }
